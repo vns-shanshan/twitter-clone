@@ -109,10 +109,23 @@ const Post = ({ post }) => {
         throw new Error(error);
       }
     },
-    onSuccess: () => {
-      toast.success("Comment posted successfully");
+    onSuccess: (updatedComments) => {
+      // toast.success("Comment posted successfully");
       setComment("");
-      queryClient.invalidateQueries({ queryKey: ["posts"] });
+      queryClient.setQueryData(["posts"], (oldData) => {
+        return oldData.map((p) => {
+          if (p._id === post._id) {
+            return {
+              ...p,
+              comments: updatedComments.comments,
+            };
+          }
+          return p;
+        });
+      });
+
+      const modal = document.getElementById(`comments_modal${post._id}`);
+      if (modal?.close) modal.close();
     },
     onError: (error) => {
       toast.error(error.message);
